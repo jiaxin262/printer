@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.List;
@@ -165,7 +166,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             postRequestDelay(printJob);
         } else if (mPrintJobState == PrintJobInfo.STATE_BLOCKED) {
             Log.d(TAG, "print job " + printJobId.toString() + " is blocked");
-
+            Toast toast = Toast.makeText(MainActivity.this, "打印任务阻塞,已取消", Toast.LENGTH_LONG);
+            toast.show();
+            cancelPrintJob(printJobId);
         } else if (mPrintJobState == PrintJobInfo.STATE_CANCELED) {
             Log.d(TAG, "print job " + printJobId.toString() + " is cancelled");
 
@@ -181,6 +184,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (mPrintJobState == PrintJobInfo.STATE_STARTED) {
             Log.d(TAG, "print job " + printJobId.toString() + " is started");
             postRequestDelay(printJob);
+        }
+    }
+
+    private void cancelPrintJob(PrintJobId printJobId) {
+        Log.d(TAG, "cancelPrintJob() printJobId:" + printJobId);
+        List<PrintJob> printJobs = mPrintManager.getPrintJobs();
+        if (printJobs.size() > 0) {
+            for (PrintJob job : printJobs) {
+                if (job != null && printJobId.equals(job.getId()) && job.isBlocked()) {
+                    Log.d(TAG, "printJob:" + printJobId.toString() + " has been canceled!!!");
+                    job.cancel();
+                    return;
+                }
+            }
         }
     }
 
@@ -223,7 +240,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(),
-                R.drawable.jason2);
+                R.drawable.neimaer
+        );
         if (bitmap == null) {
             return;
         }
