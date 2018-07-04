@@ -33,27 +33,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // 打印份数
     public static final String EXTRA_PRINT_COPIES =
             "CANON_PRINT_COPIES";
-    // 纸张尺寸code
-//    public static final String EXTRA_PRINT_MEDIA_SIZE_CODE =
-//            "CANON_PRINT_MEDIA_SIZE_CODE";
-    // 颜色
-//    public static final String EXTRA_PRINT_COLOR_MODE =
-//            "CANON_PRINT_COLOR_MODE";
-    // 方向
-//    public static final String EXTRA_PRINT_ORIENTATION =
-//            "CANON_PRINT_ORIENTATION";
-    // 开始页码
-    public static final String EXTRA_PRINT_START_PAGE =
-            "CANON_PRINT_START_PAGE";
-    // 结束页码
-    public static final String EXTRA_PRINT_END_PAGE =
-            "CANON_PRINT_END_PAGE";
-    // 介质类型
-    public static final String EXTRA_PRINT_MEDIA_TYPE =
-            "CANON_PRINT_MEDIA_TYPE";
-    // 翻页
-    public static final String EXTRA_PRINT_PAGE_TURN =
-            "CANON_PRINT_PAGE_TURN";
 
     // 打印服务UI透明度 0-1
     public static final String EXTRA_PRINT_PAGE_ALPHA =
@@ -90,13 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String mImgFilePath;
     private String mPdfFilePath;
     private int mCopies = 1;
-    private int mMediaSizeCode;
-    private int mColorMode;
     private int mOrientation; // 0是纵向,1是横向
-    private int mStartPage;
-    private int mEndPage;
-    private int mMediaType;
-    private int mTurnPageType;
 
     private SharedPreferences mPrintAttrsSp;
 
@@ -281,31 +254,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mImgFilePath = TEST_IMG_PDF_PATH;
         mPdfFilePath = TEST_PDF_PATH;
         mCopies = 1;
-        mMediaSizeCode = 2;
-        mColorMode = PrintAttributes.COLOR_MODE_COLOR;
         mOrientation = ORIENTATION_LANDSCAPE;
-        mStartPage = 0;
-        mEndPage = 0;
-        mMediaType = 1;
-        mTurnPageType = 0;
         SharedPreferences.Editor printAttrEditor = mPrintAttrsSp.edit();
         printAttrEditor.putString(EXTRA_PRINT_PDF_FILE_PATH, mPdfFilePath);
         // 打印份数
         printAttrEditor.putString(EXTRA_PRINT_COPIES, String.valueOf(mCopies));
-/*        // 纸张尺寸
-        String mediaSizeLabel = "";
-        if (mMediaSizeCode == 1) { // A4
-            mediaSizeLabel = "ISO A4";
-        } else if (mMediaSizeCode == 2) { // 5寸相片纸
-            mediaSizeLabel = "L 89x127mm";
-        }
-        printAttrEditor.putString(EXTRA_PRINT_MEDIA_SIZE_CODE, mediaSizeLabel);
-        printAttrEditor.putInt(EXTRA_PRINT_COLOR_MODE, mColorMode);
-        printAttrEditor.putInt(EXTRA_PRINT_ORIENTATION, mOrientation);*/
-        printAttrEditor.putInt(EXTRA_PRINT_START_PAGE, mStartPage);
-        printAttrEditor.putInt(EXTRA_PRINT_END_PAGE, mEndPage);
-        printAttrEditor.putInt(EXTRA_PRINT_MEDIA_TYPE, mMediaType);
-        printAttrEditor.putInt(EXTRA_PRINT_PAGE_TURN, mTurnPageType);
 
         printAttrEditor.putFloat(EXTRA_PRINT_PAGE_ALPHA, mUiAlpha);
         printAttrEditor.putBoolean(EXTRA_PRINT_AUTO_START, mAutoStartPrint);
