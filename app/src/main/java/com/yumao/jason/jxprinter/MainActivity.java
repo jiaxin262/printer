@@ -28,9 +28,6 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     public static final String TAG = "MainActivity";
 
-    public static final String ACTION_PRINT_DIALOG = "android.print.PRINT_DIALOG";
-    public static final String EXTRA_PRINT_DOCUMENT_ADAPTER =
-            "android.print.intent.extra.EXTRA_PRINT_DOCUMENT_ADAPTER";
 
     public static final String SP_NAME_CANON_PRINTER_HELPER = "canon_printer_helper";
     public static final String CHECK_PRINTER_VALID_NAME = "check-printer-valid";
@@ -63,8 +60,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView mPrintImgTv;
     private LinearLayout mPrintLogLl;
 
-    private TextView mOpenPageTv;
-    private TextView mGetExternalDir;
     private TextView mCheckPrinterValidTv;
 
     private PrintManager mPrintManager;
@@ -90,17 +85,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mPrintDocTv = (TextView) findViewById(R.id.print_doc_tv);
         mPrintImgTv = (TextView) findViewById(R.id.print_img_tv);
         mPrintLogLl = (LinearLayout) findViewById(R.id.print_log_ll);
-        mOpenPageTv = (TextView) findViewById(R.id.open_new_activity);
-        mGetExternalDir = (TextView) findViewById(R.id.get_external_dir);
         mCheckPrinterValidTv = (TextView) findViewById(R.id.check_printer_valid);
 
-        mOpenPageTv.setVisibility(View.GONE);
-        mGetExternalDir.setVisibility(View.GONE);
 
         mPrintDocTv.setOnClickListener(this);
         mPrintImgTv.setOnClickListener(this);
-        mOpenPageTv.setOnClickListener(this);
-        mGetExternalDir.setOnClickListener(this);
         mCheckPrinterValidTv.setOnClickListener(this);
 
         mPrintAttrsSp = getSharedPreferences(SP_NAME_CANON_PRINTER_HELPER, Context.MODE_WORLD_READABLE | Context.MODE_MULTI_PROCESS);
@@ -116,15 +105,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (viewId == R.id.print_img_tv) {
             Log.d(TAG, "click print img btn");
             doPrintImg();
-        } else if (viewId == R.id.open_new_activity) {
-            Log.d(TAG, "open new page");
-            openNewPage();
-        } else if (viewId == R.id.get_external_dir) {
-            String dirStr = getExternalDir();
-            Log.d(TAG, "get external dir:" + dirStr);
-            TextView tv = new TextView(MainActivity.this);
-            tv.setText(dirStr);
-            mPrintLogLl.addView(tv);
         } else if (viewId == R.id.check_printer_valid) {
             Log.d(TAG, "check printer valid");
             checkPrinterValid();
@@ -133,17 +113,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void checkPrinterValid() {
         doPrintDoc(CHECK_PRINTER_VALID_NAME);
-//        mHandler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//               doPrintDoc("normal-print-doc");
-//            }
-//        }, 2000);
-    }
-
-    private void openNewPage() {
-        Intent intent = new Intent(MainActivity.this, TestActivity.class);
-        startActivity(intent);
     }
 
     private void doPrintDoc(String printJobName) {
@@ -314,15 +283,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         printAttrEditor.commit();
     }
 
-    public String getExternalDir() {
-        File f1 = Environment.getExternalStorageDirectory();
-        if (f1 != null && f1.exists()) {
-            return f1.getPath();
-        }
-        File f= MainActivity.this.getExternalFilesDir(null);
-        if (f != null) {
-            return f.getPath();
-        }
-        return "";
-    }
 }

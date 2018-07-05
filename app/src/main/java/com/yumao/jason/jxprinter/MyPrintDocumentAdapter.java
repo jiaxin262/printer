@@ -191,45 +191,5 @@ public class MyPrintDocumentAdapter extends PrintDocumentAdapter {
 
     }
 
-    private int computePageCount(PrintAttributes attributes) {
-        return 1;
-    }
-
-    private boolean pageInRange(PageRange[] pageRanges, int page) {
-        for (int i = 0; i < pageRanges.length; i++) {
-            if ((page >= pageRanges[i].getStart()) &&
-                    (page <= pageRanges[i].getEnd()))
-                return true;
-        }
-        return false;
-    }
-
-    public static boolean copyFile(File source, File dest) {
-        if (source.equals(dest)){
-            return true;
-        }
-        FileChannel inputChannel = null;
-        FileChannel outputChannel = null;
-        try {
-            inputChannel = new FileInputStream(source).getChannel();
-            outputChannel = new FileOutputStream(dest).getChannel();
-            outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
-        } catch (FileNotFoundException e) {
-            return false;
-        } catch (IOException e) {
-            return false;
-        } finally {
-            try {
-                if (inputChannel != null) {
-                    inputChannel.close();
-                }
-                if (outputChannel != null) {
-                    outputChannel.close();
-                }
-            } catch (IOException e) {
-            }
-        }
-        return false;
-    }
 
 }

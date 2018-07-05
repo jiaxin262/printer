@@ -15,7 +15,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="打印文档"
-            android:textSize="50dp" />
+            android:textSize="30dp" />
 
         <TextView
             android:id="@+id/print_img_tv"
@@ -23,7 +23,15 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="30dp"
             android:text="打印图片"
-            android:textSize="50dp" />
+            android:textSize="30dp" />
+
+        <TextView
+            android:id="@+id/check_printer_valid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:text="检查打印机是否可用"
+            android:textSize="30dp" />
     </LinearLayout>
 
     <ScrollView
@@ -36,27 +44,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/open_new_activity"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="打开新页面"
-                android:textSize="50dp" />
-
-            <TextView
-                android:id="@+id/get_external_dir"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="获取文件夹路径"
-                android:textSize="50dp" />
-
-            <TextView
-                android:id="@+id/check_printer_valid"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="检查打印机是否可用"
-                android:textSize="50dp" />
 
         </LinearLayout>
 
