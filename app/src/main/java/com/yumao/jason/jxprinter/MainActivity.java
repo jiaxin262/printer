@@ -133,6 +133,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void checkPrinterValid() {
         doPrintDoc(CHECK_PRINTER_VALID_NAME);
+//        mHandler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//               doPrintDoc("normal-print-doc");
+//            }
+//        }, 2000);
     }
 
     private void openNewPage() {
@@ -189,7 +195,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (mPrintJobState == PrintJobInfo.STATE_CANCELED) {
             Log.d(TAG, "print job " + printJobId.toString() + " is cancelled, printJobInfo.getLabel():" + printJobInfo.getLabel());
             if (CHECK_PRINTER_VALID_NAME.equals(printJobInfo.getLabel())) {
-                Log.d(TAG, "printer state:" + mPrintJobStateReason);
+                Log.d(TAG, "CHECK_PRINTER_VALID_NAME cancel");
+                Toast toast = Toast.makeText(MainActivity.this, "检查任务-检查到打印机不可用", Toast.LENGTH_SHORT);
+                toast.show();
+            } else {
+                Log.d(TAG, "normal print job cancel");
+                Toast toast = Toast.makeText(MainActivity.this, "打印任务-打印机不可用", Toast.LENGTH_SHORT);
+                toast.show();
             }
         } else if (mPrintJobState == PrintJobInfo.STATE_COMPLETED) {
             Log.d(TAG, "print job " + printJobId.toString() + " is completed");
