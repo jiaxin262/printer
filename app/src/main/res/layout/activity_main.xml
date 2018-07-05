@@ -51,6 +51,13 @@
                 android:text="获取文件夹路径"
                 android:textSize="50dp" />
 
+            <TextView
+                android:id="@+id/check_printer_valid"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="检查打印机是否可用"
+                android:textSize="50dp" />
+
         </LinearLayout>
 
     </ScrollView>

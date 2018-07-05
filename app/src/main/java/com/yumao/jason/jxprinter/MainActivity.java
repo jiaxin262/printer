@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
@@ -27,7 +28,13 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     public static final String TAG = "MainActivity";
 
+    public static final String ACTION_PRINT_DIALOG = "android.print.PRINT_DIALOG";
+    public static final String EXTRA_PRINT_DOCUMENT_ADAPTER =
+            "android.print.intent.extra.EXTRA_PRINT_DOCUMENT_ADAPTER";
+
     public static final String SP_NAME_CANON_PRINTER_HELPER = "canon_printer_helper";
+    public static final String CHECK_PRINTER_VALID_NAME = "check-printer-valid";
+
     // pdf文件路径
     public static final String EXTRA_PRINT_PDF_FILE_PATH =
             "CANON_PRINT_PDF_FILE_PATH";
@@ -58,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private TextView mOpenPageTv;
     private TextView mGetExternalDir;
+    private TextView mCheckPrinterValidTv;
 
     private PrintManager mPrintManager;
     private Handler mHandler = new Handler(Looper.getMainLooper());
@@ -84,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mPrintLogLl = (LinearLayout) findViewById(R.id.print_log_ll);
         mOpenPageTv = (TextView) findViewById(R.id.open_new_activity);
         mGetExternalDir = (TextView) findViewById(R.id.get_external_dir);
+        mCheckPrinterValidTv = (TextView) findViewById(R.id.check_printer_valid);
 
         mOpenPageTv.setVisibility(View.GONE);
         mGetExternalDir.setVisibility(View.GONE);
@@ -92,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mPrintImgTv.setOnClickListener(this);
         mOpenPageTv.setOnClickListener(this);
         mGetExternalDir.setOnClickListener(this);
+        mCheckPrinterValidTv.setOnClickListener(this);
 
         mPrintAttrsSp = getSharedPreferences(SP_NAME_CANON_PRINTER_HELPER, Context.MODE_WORLD_READABLE | Context.MODE_MULTI_PROCESS);
 
@@ -102,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final int viewId = v.getId();
         if (viewId == R.id.print_doc_tv) {
             Log.d(TAG, "click print doc btn");
-            doPrintDoc();
+            doPrintDoc("print-doc");
         } else if (viewId == R.id.print_img_tv) {
             Log.d(TAG, "click print img btn");
             doPrintImg();
@@ -115,7 +125,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             TextView tv = new TextView(MainActivity.this);
             tv.setText(dirStr);
             mPrintLogLl.addView(tv);
+        } else if (viewId == R.id.check_printer_valid) {
+            Log.d(TAG, "check printer valid");
+            checkPrinterValid();
         }
+    }
+
+    private void checkPrinterValid() {
+        doPrintDoc(CHECK_PRINTER_VALID_NAME);
     }
 
     private void openNewPage() {
@@ -123,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startActivity(intent);
     }
 
-    private void doPrintDoc() {
+    private void doPrintDoc(String printJobName) {
         Log.d(TAG, "doPrintDoc()");
         if (mPrintManager == null) {
             mPrintManager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
@@ -147,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         printDocumentAdapter.setPdfFilePath(mPdfFilePath);
         printDocumentAdapter.setTotalPages(TOTAL_PAGE_COUNT);
 
-        PrintJob printJob = mPrintManager.print("test-print-doc", printDocumentAdapter, attr);
+        PrintJob printJob = mPrintManager.print(printJobName, printDocumentAdapter, attr);
         checkPrintJob(printJob);
     }
 
@@ -170,8 +187,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             toast.show();
             cancelPrintJob(printJobId);
         } else if (mPrintJobState == PrintJobInfo.STATE_CANCELED) {
-            Log.d(TAG, "print job " + printJobId.toString() + " is cancelled");
-
+            Log.d(TAG, "print job " + printJobId.toString() + " is cancelled, printJobInfo.getLabel():" + printJobInfo.getLabel());
+            if (CHECK_PRINTER_VALID_NAME.equals(printJobInfo.getLabel())) {
+                Log.d(TAG, "printer state:" + mPrintJobStateReason);
+            }
         } else if (mPrintJobState == PrintJobInfo.STATE_COMPLETED) {
             Log.d(TAG, "print job " + printJobId.toString() + " is completed");
 
