@@ -1,4 +1,4 @@
-package com.yumao.jason.jxprinter;
+package com.yumao.jason.jxprinter.adapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;

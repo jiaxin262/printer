@@ -34,19 +34,18 @@
             android:textSize="30dp" />
     </LinearLayout>
 
-    <ScrollView
+    <View
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="10dp">
+        android:layout_height="1dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:background="@color/colorPrimary"/>
 
-        <LinearLayout
-            android:id="@+id/print_log_ll"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+    <com.yumao.jason.jxprinter.view.LogView
+        android:id="@+id/log_view_container_ll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        </LinearLayout>
-
-    </ScrollView>
+    </com.yumao.jason.jxprinter.view.LogView>
 
 </LinearLayout>

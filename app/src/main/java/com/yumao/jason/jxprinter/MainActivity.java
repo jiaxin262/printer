@@ -1,12 +1,9 @@
 package com.yumao.jason.jxprinter;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.print.PrintAttributes;
@@ -22,7 +19,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
+import com.yumao.jason.jxprinter.adapter.MyPrintDocumentAdapter;
+import com.yumao.jason.jxprinter.adapter.MyPrintImageAdapter;
+import com.yumao.jason.jxprinter.view.LogView;
+
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -31,51 +31,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public static final String SP_NAME_CANON_PRINTER_HELPER = "canon_printer_helper";
     public static final String CHECK_PRINTER_VALID_NAME = "check-printer-valid";
-
-    // pdf文件路径
-    public static final String EXTRA_PRINT_PDF_FILE_PATH =
-            "CANON_PRINT_PDF_FILE_PATH";
     // 打印份数
-    public static final String EXTRA_PRINT_COPIES =
-            "CANON_PRINT_COPIES";
-
+    public static final String EXTRA_PRINT_COPIES = "CANON_PRINT_COPIES";
     // 打印服务UI透明度 0-1
-    public static final String EXTRA_PRINT_PAGE_ALPHA =
-            "CANON_PRINT_PAGE_ALPHA";
+    public static final String EXTRA_PRINT_PAGE_ALPHA = "CANON_PRINT_PAGE_ALPHA";
     // 是否自动触发打印
-    public static final String EXTRA_PRINT_AUTO_START =
-            "CANON_PRINT_AUTP_START";
+    public static final String EXTRA_PRINT_AUTO_START = "CANON_PRINT_AUTP_START";
+    private static final PrintAttributes.MediaSize L_89_127 = new PrintAttributes.MediaSize("CANON_MEDIA_SIZE_L",
+            "L 89x127mm", 3503, 5000);
+    private static final String TEST_PDF_PATH = "/mnt/internal_sd/tmp/test.pdf";
+    private static final String TEST_IMG_PDF_PATH = "/mnt/internal_sd/tmp/Marvel.pdf";
 
+    private static final int TOTAL_PAGE_COUNT = 4;
     private static final int ORIENTATION_PORTRAIT = 0;
     private static final int ORIENTATION_LANDSCAPE = 1;
 
-    private static final PrintAttributes.MediaSize L_89_127 = new PrintAttributes.MediaSize("CANON_MEDIA_SIZE_L",
-            "L 89x127mm", 3503, 5000);
-
-    private static final String TEST_PDF_PATH = "/mnt/internal_sd/tmp/test.pdf";
-    private static final String TEST_IMG_PDF_PATH = "/mnt/internal_sd/tmp/Marvel.pdf";
-    private static final int TOTAL_PAGE_COUNT = 4;
-
     private TextView mPrintDocTv;
     private TextView mPrintImgTv;
-    private LinearLayout mPrintLogLl;
-
     private TextView mCheckPrinterValidTv;
+    private LogView mLogContainer;
 
     private PrintManager mPrintManager;
     private Handler mHandler = new Handler(Looper.getMainLooper());
+    private SharedPreferences mPrintAttrsSp;
+
     private int mPrintJobState;
     private String mPrintJobStateReason;
-
     private float mUiAlpha = 1;
     private boolean mAutoStartPrint = false;
-
     private String mImgFilePath;
     private String mPdfFilePath;
     private int mCopies = 1;
     private int mOrientation; // 0是纵向,1是横向
-
-    private SharedPreferences mPrintAttrsSp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,9 +71,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mPrintDocTv = (TextView) findViewById(R.id.print_doc_tv);
         mPrintImgTv = (TextView) findViewById(R.id.print_img_tv);
-        mPrintLogLl = (LinearLayout) findViewById(R.id.print_log_ll);
         mCheckPrinterValidTv = (TextView) findViewById(R.id.check_printer_valid);
-
+        mLogContainer = (LogView) findViewById(R.id.log_view_container_ll);
 
         mPrintDocTv.setOnClickListener(this);
         mPrintImgTv.setOnClickListener(this);
@@ -147,42 +133,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (printJob == null) {
             Log.e(TAG, "printJob is null!!!");
         }
-        PrintJobId printJobId = printJob.getId();
+        String printJobId = printJob.getId().toString();
         PrintJobInfo printJobInfo = printJob.getInfo();
         Log.d(TAG, "printJobInfo:" + printJobInfo.toString());
         mPrintJobState = printJobInfo.getState();
         mPrintJobStateReason = parseTag(printJobInfo.toString());
         Log.d(TAG, "print state:" + mPrintJobState);
         if (mPrintJobState == PrintJobInfo.STATE_CREATED) {
-            Log.d(TAG, "print job " + printJobId.toString() + " is created");
+            Log.d(TAG, "print job " + printJobId + " is created");
+            mLogContainer.addLog("state:" + mPrintJobState + " 打印任务已创建 jobId:" + printJobId);
             postRequestDelay(printJob);
         } else if (mPrintJobState == PrintJobInfo.STATE_BLOCKED) {
-            Log.d(TAG, "print job " + printJobId.toString() + " is blocked");
+            Log.d(TAG, "print job " + printJobId + " is blocked");
+            mLogContainer.addLog("state:" + mPrintJobState + " 打印任务阻塞,已取消");
             Toast toast = Toast.makeText(MainActivity.this, "打印任务阻塞,已取消", Toast.LENGTH_LONG);
             toast.show();
-            cancelPrintJob(printJobId);
+            cancelPrintJob(printJob.getId());
         } else if (mPrintJobState == PrintJobInfo.STATE_CANCELED) {
-            Log.d(TAG, "print job " + printJobId.toString() + " is cancelled, printJobInfo.getLabel():" + printJobInfo.getLabel());
+            Log.d(TAG, "print job " + printJobId + " is cancelled, printJobInfo.getLabel():" + printJobInfo.getLabel());
+            mLogContainer.addLog("state:" + mPrintJobState + " 打印任务已取消");
             if (CHECK_PRINTER_VALID_NAME.equals(printJobInfo.getLabel())) {
                 Log.d(TAG, "CHECK_PRINTER_VALID_NAME cancel");
                 Toast toast = Toast.makeText(MainActivity.this, "检查任务-检查到打印机不可用", Toast.LENGTH_SHORT);
                 toast.show();
-            } else {
-                Log.d(TAG, "normal print job cancel");
-                Toast toast = Toast.makeText(MainActivity.this, "打印任务-打印机不可用", Toast.LENGTH_SHORT);
-                toast.show();
             }
         } else if (mPrintJobState == PrintJobInfo.STATE_COMPLETED) {
-            Log.d(TAG, "print job " + printJobId.toString() + " is completed");
-
+            Log.d(TAG, "print job " + printJobId + " is completed");
+            mLogContainer.addLog("state:" + mPrintJobState + " 打印任务已完成");
         } else if (mPrintJobState == PrintJobInfo.STATE_FAILED) {
-            Log.d(TAG, "print job " + printJobId.toString() + " is failed");
-
+            Log.d(TAG, "print job " + printJobId + " is failed");
+            mLogContainer.addLog("state:" + mPrintJobState + " 打印任务失败");
         } else if (mPrintJobState == PrintJobInfo.STATE_QUEUED) {
-            Log.d(TAG, "print job " + printJobId.toString() + " is queued");
+            Log.d(TAG, "print job " + printJobId + " is queued");
+            mLogContainer.addLog("state:" + mPrintJobState + " 打印任务已入队列");
             postRequestDelay(printJob);
         } else if (mPrintJobState == PrintJobInfo.STATE_STARTED) {
-            Log.d(TAG, "print job " + printJobId.toString() + " is started");
+            Log.d(TAG, "print job " + printJobId + " is started");
+            mLogContainer.addLog("state:" + mPrintJobState + " 打印任务已开始");
             postRequestDelay(printJob);
         }
     }
@@ -274,10 +261,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCopies = 1;
         mOrientation = ORIENTATION_LANDSCAPE;
         SharedPreferences.Editor printAttrEditor = mPrintAttrsSp.edit();
-        printAttrEditor.putString(EXTRA_PRINT_PDF_FILE_PATH, mPdfFilePath);
         // 打印份数
         printAttrEditor.putString(EXTRA_PRINT_COPIES, String.valueOf(mCopies));
-
         printAttrEditor.putFloat(EXTRA_PRINT_PAGE_ALPHA, mUiAlpha);
         printAttrEditor.putBoolean(EXTRA_PRINT_AUTO_START, mAutoStartPrint);
         printAttrEditor.commit();
