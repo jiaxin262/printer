@@ -2,50 +2,211 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="horizontal">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center">
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp">
 
         <TextView
-            android:id="@+id/print_doc_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="打印文档"
-            android:textSize="30dp" />
+            android:layout_marginTop="10dp"
+            android:text="参数设置"
+            android:textSize="20dp"
+            android:textColor="@color/black"/>
 
-        <TextView
-            android:id="@+id/print_img_tv"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:text="打印图片"
-            android:textSize="30dp" />
+            android:layout_marginTop="5dp"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/check_printer_valid"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="是否显示系统打印页面:"
+                android:textSize="15dp"/>
+
+            <RadioGroup
+                android:id="@+id/show_sys_print_rg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <RadioButton
+                    android:id="@+id/show_sys_print_ui_rb"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="显示"
+                    android:checked="true"/>
+
+                <RadioButton
+                    android:id="@+id/not_show_sys_print_ui_rb"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="不显示"/>
+            </RadioGroup>
+
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:text="检查打印机是否可用"
-            android:textSize="30dp" />
+            android:layout_marginTop="5dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="是否自动开始打印:"
+                android:textSize="15dp"/>
+
+            <RadioGroup
+                android:id="@+id/auto_start_print_rg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <RadioButton
+                    android:id="@+id/auto_start_print_rb"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="是"/>
+
+                <RadioButton
+                    android:id="@+id/not_auto_start_print_rb"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="否"
+                    android:checked="true"/>
+            </RadioGroup>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="打印份数:"
+                android:textSize="15dp"/>
+
+            <com.yumao.jason.jxprinter.view.AmountView
+                android:id="@+id/print_copies_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            </com.yumao.jason.jxprinter.view.AmountView>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="颜色模式:"
+                android:textSize="15dp"/>
+
+            <RadioGroup
+                android:id="@+id/color_mode_rg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <RadioButton
+                    android:id="@+id/color_mode_monochrome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="黑白"/>
+
+                <RadioButton
+                    android:id="@+id/color_mode_color"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="彩色"
+                    android:checked="true"/>
+            </RadioGroup>
+
+        </LinearLayout>
+
+
     </LinearLayout>
 
     <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:background="@color/colorPrimary"/>
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:background="@color/colorPrimary" />
 
-    <com.yumao.jason.jxprinter.view.LogView
-        android:id="@+id/log_view_container_ll"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    </com.yumao.jason.jxprinter.view.LogView>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/print_doc_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="打印文档" />
+
+            <Button
+                android:id="@+id/print_img_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:text="打印图片" />
+
+            <Button
+                android:id="@+id/check_printer_valid"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:text="检查打印机是否可用" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:background="@color/colorPrimary" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/clear_log_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="清除log" />
+
+            <com.yumao.jason.jxprinter.view.LogView
+                android:id="@+id/log_view_container_ll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            </com.yumao.jason.jxprinter.view.LogView>
+
+        </LinearLayout>
+    </LinearLayout>
 
 </LinearLayout>

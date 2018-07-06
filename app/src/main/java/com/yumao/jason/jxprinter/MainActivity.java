@@ -15,12 +15,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.yumao.jason.jxprinter.adapter.MyPrintDocumentAdapter;
 import com.yumao.jason.jxprinter.adapter.MyPrintImageAdapter;
+import com.yumao.jason.jxprinter.view.AmountView;
 import com.yumao.jason.jxprinter.view.LogView;
 
 import java.util.List;
@@ -46,10 +49,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int ORIENTATION_PORTRAIT = 0;
     private static final int ORIENTATION_LANDSCAPE = 1;
 
-    private TextView mPrintDocTv;
-    private TextView mPrintImgTv;
-    private TextView mCheckPrinterValidTv;
+    private Button mPrintDocTv;
+    private Button mPrintImgTv;
+    private Button mCheckPrinterValidTv;
     private LogView mLogContainer;
+    private Button mClearLogBtn;
+    private RadioGroup mShowSysUiRg;
+    private RadioGroup mAutoStartPrintRg;
+    private AmountView mPrintCopiesView;
+    private RadioGroup mColorModeRg;
 
     private PrintManager mPrintManager;
     private Handler mHandler = new Handler(Looper.getMainLooper());
@@ -62,21 +70,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String mImgFilePath;
     private String mPdfFilePath;
     private int mCopies = 1;
-    private int mOrientation; // 0是纵向,1是横向
+    private int mOrientation;
+    private int mColorMode = PrintAttributes.COLOR_MODE_COLOR;
+    private long mCheckPrinterStartTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mPrintDocTv = (TextView) findViewById(R.id.print_doc_tv);
-        mPrintImgTv = (TextView) findViewById(R.id.print_img_tv);
-        mCheckPrinterValidTv = (TextView) findViewById(R.id.check_printer_valid);
+        mPrintDocTv = (Button) findViewById(R.id.print_doc_tv);
+        mPrintImgTv = (Button) findViewById(R.id.print_img_tv);
+        mCheckPrinterValidTv = (Button) findViewById(R.id.check_printer_valid);
         mLogContainer = (LogView) findViewById(R.id.log_view_container_ll);
+        mClearLogBtn = (Button) findViewById(R.id.clear_log_btn);
+        mShowSysUiRg = (RadioGroup) findViewById(R.id.show_sys_print_rg);
+        mAutoStartPrintRg = (RadioGroup) findViewById(R.id.auto_start_print_rg);
+        mPrintCopiesView = (AmountView) findViewById(R.id.print_copies_view);
+        mColorModeRg = (RadioGroup) findViewById(R.id.color_mode_rg);
 
         mPrintDocTv.setOnClickListener(this);
         mPrintImgTv.setOnClickListener(this);
         mCheckPrinterValidTv.setOnClickListener(this);
+        mClearLogBtn.setOnClickListener(this);
+        mShowSysUiRg.setOnCheckedChangeListener(mShowSysUiRgListener);
+        mAutoStartPrintRg.setOnCheckedChangeListener(mAutoPrintRgListener);
+        mPrintCopiesView.setOnAmountChangeListener(new AmountView.OnAmountChangeListener() {
+            @Override
+            public void onAmountChange(View view, int amount) {
+                Log.d(TAG, "onAmountChange() amount:" + amount);
+                if (amount >= 1) {
+                    mCopies = amount;
+                }
+            }
+        });
+        mColorModeRg.setOnCheckedChangeListener(mColorModeRgListener);
 
         mPrintAttrsSp = getSharedPreferences(SP_NAME_CANON_PRINTER_HELPER, Context.MODE_WORLD_READABLE | Context.MODE_MULTI_PROCESS);
 
@@ -94,10 +122,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (viewId == R.id.check_printer_valid) {
             Log.d(TAG, "check printer valid");
             checkPrinterValid();
+        } else if (viewId == R.id.clear_log_btn) {
+            Log.d(TAG, "clear log views");
+            mLogContainer.clearLogs();
         }
     }
 
     private void checkPrinterValid() {
+        mCheckPrinterStartTime = System.currentTimeMillis();
         doPrintDoc(CHECK_PRINTER_VALID_NAME);
     }
 
@@ -117,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         PrintAttributes attr = new PrintAttributes.Builder()
                 .setMediaSize(mediaSize)
-                .setColorMode(PrintAttributes.COLOR_MODE_MONOCHROME)
+                .setColorMode(mColorMode)
 //                .setResolution(new PrintAttributes.Resolution("600*1200", "600*1200", 600, 1200))
                 .build();
 
@@ -154,7 +186,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mLogContainer.addLog("state:" + mPrintJobState + " 打印任务已取消");
             if (CHECK_PRINTER_VALID_NAME.equals(printJobInfo.getLabel())) {
                 Log.d(TAG, "CHECK_PRINTER_VALID_NAME cancel");
-                Toast toast = Toast.makeText(MainActivity.this, "检查任务-检查到打印机不可用", Toast.LENGTH_SHORT);
+                String logStr = "";
+                if (System.currentTimeMillis() - mCheckPrinterStartTime > 10000) {
+                    logStr = "检查任务-检查到打印机不可用";
+                } else {
+                    logStr = "检查任务-检查到打印机可以使用";
+                }
+                mLogContainer.addLog(logStr);
+                Toast toast = Toast.makeText(MainActivity.this, logStr, Toast.LENGTH_SHORT);
+                toast.show();
+            } else {
+                mLogContainer.addLog("state:" + mPrintJobState + " 打印任务已取消,若不是手动返回,请检查打印机是否正常!");
+                Toast toast = Toast.makeText(MainActivity.this, "打印任务已取消", Toast.LENGTH_SHORT);
                 toast.show();
             }
         } else if (mPrintJobState == PrintJobInfo.STATE_COMPLETED) {
@@ -244,7 +287,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         PrintAttributes attr = new PrintAttributes.Builder()
                 .setMediaSize(mediaSize)
-                .setColorMode(PrintAttributes.COLOR_MODE_COLOR)
+                .setColorMode(mColorMode)
 //                .setResolution(new PrintAttributes.Resolution("600*1200", "600*1200", 600, 1200))
                 .build();
 
@@ -258,8 +301,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void generateSpContent() {
         mImgFilePath = TEST_IMG_PDF_PATH;
         mPdfFilePath = TEST_PDF_PATH;
-        mCopies = 1;
-        mOrientation = ORIENTATION_LANDSCAPE;
+        mOrientation = ORIENTATION_PORTRAIT;
         SharedPreferences.Editor printAttrEditor = mPrintAttrsSp.edit();
         // 打印份数
         printAttrEditor.putString(EXTRA_PRINT_COPIES, String.valueOf(mCopies));
@@ -268,4 +310,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         printAttrEditor.commit();
     }
 
+    private RadioGroup.OnCheckedChangeListener mShowSysUiRgListener = new RadioGroup.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(RadioGroup group, int checkedId) {
+            Log.d(TAG, "mShowSysUiRgListener onCheckedChanged() checkedId:" + checkedId);
+            if (checkedId == R.id.show_sys_print_ui_rb) {
+                mUiAlpha = 1;
+            } else {
+                mUiAlpha = 0;
+            }
+        }
+    };
+
+    private RadioGroup.OnCheckedChangeListener mAutoPrintRgListener = new RadioGroup.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(RadioGroup group, int checkedId) {
+            Log.d(TAG, "mAutoPrintRgListener onCheckedChanged() checkedId:" + checkedId);
+            if (checkedId == R.id.auto_start_print_rb) {
+                mAutoStartPrint = true;
+            } else {
+                mAutoStartPrint = false;
+            }
+        }
+    };
+
+    private RadioGroup.OnCheckedChangeListener mColorModeRgListener = new RadioGroup.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(RadioGroup group, int checkedId) {
+            Log.d(TAG, "mColorModeRgListener onCheckedChanged() checkedId:" + checkedId);
+            if (checkedId == R.id.color_mode_monochrome) {
+                mColorMode = PrintAttributes.COLOR_MODE_MONOCHROME;
+            } else {
+                mColorMode = PrintAttributes.COLOR_MODE_COLOR;
+            }
+        }
+    };
 }

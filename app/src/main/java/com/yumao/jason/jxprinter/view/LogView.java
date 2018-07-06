@@ -46,4 +46,9 @@ public class LogView extends ScrollView{
         tv.setPadding(5, 5, 5, 5);
         mLogViewRootLl.addView(tv);
     }
+
+    public void clearLogs() {
+        Log.d(TAG, "clearLogs()");
+        mLogViewRootLl.removeAllViews();
+    }
 }
