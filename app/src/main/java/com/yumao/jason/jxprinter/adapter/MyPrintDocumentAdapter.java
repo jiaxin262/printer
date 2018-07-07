@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.channels.FileChannel;
 
 /*******************************************************************************
@@ -124,15 +125,16 @@ public class MyPrintDocumentAdapter extends PrintDocumentAdapter {
             return;
         }
 
-        if (!mSourcePdfFile.exists()) {
-            Log.e(TAG, "要打印的文件不存在!");
-            return;
-        }
+//        if (!mSourcePdfFile.exists()) {
+//            Log.e(TAG, "要打印的文件不存在!");
+//            return;
+//        }
 
-        FileInputStream in = null;
+        InputStream in = null;
         FileOutputStream out = null;
         try {
-            in = new FileInputStream(mSourcePdfFile);
+//            in = new FileInputStream(mSourcePdfFile);
+            in = mContext.getAssets().open("test.pdf");
             out = new FileOutputStream(destination.getFileDescriptor());
             byte[] buffer = new byte[1024];
             int len = 0;
