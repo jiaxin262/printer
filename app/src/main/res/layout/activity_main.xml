@@ -179,6 +179,13 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="30dp"
                 android:text="检查打印机是否可用" />
+
+            <Button
+                android:id="@+id/check_display"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:text="检查显示屏" />
         </LinearLayout>
 
         <View

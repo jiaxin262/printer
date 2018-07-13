@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.hardware.display.DisplayManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.print.PrintAttributes;
@@ -14,6 +15,7 @@ import android.print.PrintManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -52,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button mPrintDocTv;
     private Button mPrintImgTv;
     private Button mCheckPrinterValidTv;
+    private Button mCheckDisplayBtn;
     private LogView mLogContainer;
     private Button mClearLogBtn;
     private RadioGroup mShowSysUiRg;
@@ -60,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private RadioGroup mColorModeRg;
 
     private PrintManager mPrintManager;
+    private DisplayManager mDisplayManager;
     private Handler mHandler = new Handler(Looper.getMainLooper());
     private SharedPreferences mPrintAttrsSp;
 
@@ -88,9 +92,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mAutoStartPrintRg = (RadioGroup) findViewById(R.id.auto_start_print_rg);
         mPrintCopiesView = (AmountView) findViewById(R.id.print_copies_view);
         mColorModeRg = (RadioGroup) findViewById(R.id.color_mode_rg);
+        mCheckDisplayBtn = (Button) findViewById(R.id.check_display);
 
         mPrintDocTv.setOnClickListener(this);
         mPrintImgTv.setOnClickListener(this);
+        mCheckDisplayBtn.setOnClickListener(this);
         mCheckPrinterValidTv.setOnClickListener(this);
         mClearLogBtn.setOnClickListener(this);
         mShowSysUiRg.setOnCheckedChangeListener(mShowSysUiRgListener);
@@ -108,6 +114,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mPrintAttrsSp = getSharedPreferences(SP_NAME_CANON_PRINTER_HELPER, Context.MODE_WORLD_READABLE | Context.MODE_MULTI_PROCESS);
 
+        mDisplayManager = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
+        mDisplayManager.registerDisplayListener(new DisplayManager.DisplayListener() {
+            @Override
+            public void onDisplayAdded(int displayId) {
+                Log.d(TAG, "onDisplayAdded() displayId:" + displayId);
+            }
+
+            @Override
+            public void onDisplayRemoved(int displayId) {
+                Log.d(TAG, "onDisplayRemoved() displayId:" + displayId);
+            }
+
+            @Override
+            public void onDisplayChanged(int displayId) {
+                Log.d(TAG, "onDisplayChanged() displayId:" + displayId);
+            }
+        }, null);
     }
 
     @Override
@@ -125,6 +148,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (viewId == R.id.clear_log_btn) {
             Log.d(TAG, "clear log views");
             mLogContainer.clearLogs();
+        } else if (viewId == R.id.check_display) {
+            Log.d(TAG, "click check display");
+            checkDisplay();
+        }
+    }
+
+    private void checkDisplay() {
+        Display[] displays = mDisplayManager.getDisplays();
+        for (Display display : displays) {
+            Log.d(TAG, display.toString());
+            int displayId = display.getDisplayId();
+
         }
     }
 
@@ -270,11 +305,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(),
-                R.drawable.neimaer
-        );
+                R.drawable.neimaer);
         if (bitmap == null) {
             return;
         }
+
+        Log.d(TAG, "bitmap.width:" + bitmap.getWidth());
+        Log.d(TAG, "bitmap.height:" + bitmap.getHeight());
+
         if (mPrintManager == null) {
             mPrintManager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
         }
