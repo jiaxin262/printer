@@ -12,6 +12,7 @@ import android.print.PrintJob;
 import android.print.PrintJobId;
 import android.print.PrintJobInfo;
 import android.print.PrintManager;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -46,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             "L 89x127mm", 3503, 5000);
     private static final String TEST_PDF_PATH = "/mnt/internal_sd/tmp/test.pdf";
     private static final String TEST_IMG_PDF_PATH = "/mnt/internal_sd/tmp/Marvel.pdf";
+    private static final int[] IMAGE_IDS = {R.drawable.neimaer, R.drawable.yumao1, R.drawable.yumao2, R.drawable.marvel};
 
     private static final int TOTAL_PAGE_COUNT = 4;
     private static final int ORIENTATION_PORTRAIT = 0;
@@ -53,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private Button mPrintDocTv;
     private Button mPrintImgTv;
+    private Button mPrintMultiImgsTv;
     private Button mCheckPrinterValidTv;
     private Button mCheckDisplayBtn;
     private LogView mLogContainer;
@@ -77,6 +80,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private int mOrientation;
     private int mColorMode = PrintAttributes.COLOR_MODE_COLOR;
     private long mCheckPrinterStartTime = 0;
+    private int mCurrentPosition = 0;
+    private boolean mIsMultiPrint = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,12 +98,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mPrintCopiesView = (AmountView) findViewById(R.id.print_copies_view);
         mColorModeRg = (RadioGroup) findViewById(R.id.color_mode_rg);
         mCheckDisplayBtn = (Button) findViewById(R.id.check_display);
+        mPrintMultiImgsTv = (Button) findViewById(R.id.print_multi_img_tv);
 
         mPrintDocTv.setOnClickListener(this);
         mPrintImgTv.setOnClickListener(this);
         mCheckDisplayBtn.setOnClickListener(this);
         mCheckPrinterValidTv.setOnClickListener(this);
         mClearLogBtn.setOnClickListener(this);
+        mPrintMultiImgsTv.setOnClickListener(this);
         mShowSysUiRg.setOnCheckedChangeListener(mShowSysUiRgListener);
         mAutoStartPrintRg.setOnCheckedChangeListener(mAutoPrintRgListener);
         mPrintCopiesView.setOnAmountChangeListener(new AmountView.OnAmountChangeListener() {
@@ -151,7 +158,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (viewId == R.id.check_display) {
             Log.d(TAG, "click check display");
             checkDisplay();
+        } else if (viewId == R.id.print_multi_img_tv) {
+            Log.d(TAG, "click print multi imgs btn");
+            doPrintMultiImgs();
         }
+    }
+
+    private void doPrintMultiImgs() {
+        mIsMultiPrint = true;
+        mCurrentPosition = 0;
+        doPrintImg();
     }
 
     private void checkDisplay() {
@@ -212,10 +228,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             postRequestDelay(printJob);
         } else if (mPrintJobState == PrintJobInfo.STATE_BLOCKED) {
             Log.d(TAG, "print job " + printJobId + " is blocked");
-            mLogContainer.addLog("state:" + mPrintJobState + " 打印任务阻塞,已取消");
-            Toast toast = Toast.makeText(MainActivity.this, "打印任务阻塞,已取消", Toast.LENGTH_LONG);
-            toast.show();
-            cancelPrintJob(printJob.getId());
+            mLogContainer.addLog("state:" + mPrintJobState + " 打印任务阻塞");
+            postRequestDelay(printJob);
+//            Toast toast = Toast.makeText(MainActivity.this, "打印任务阻塞,已取消", Toast.LENGTH_LONG);
+//            toast.show();
+//            cancelPrintJob(printJob.getId());
         } else if (mPrintJobState == PrintJobInfo.STATE_CANCELED) {
             Log.d(TAG, "print job " + printJobId + " is cancelled, printJobInfo.getLabel():" + printJobInfo.getLabel());
             mLogContainer.addLog("state:" + mPrintJobState + " 打印任务已取消");
@@ -236,8 +253,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 toast.show();
             }
         } else if (mPrintJobState == PrintJobInfo.STATE_COMPLETED) {
-            Log.d(TAG, "print job " + printJobId + " is completed");
-            mLogContainer.addLog("state:" + mPrintJobState + " 打印任务已完成");
+            Log.d(TAG, "print job " + printJobId + " is completed. mIsMultiPrint:" + mIsMultiPrint +
+            ", mCurrentPosition:" + mCurrentPosition);
+            mLogContainer.addLog("state:" + mPrintJobState + " 打印任务已完成. mIsMultiPrint:" +
+                    mIsMultiPrint + ", mCurrentPosition:" + mCurrentPosition);
+            if (mIsMultiPrint) {
+                if (mCurrentPosition < IMAGE_IDS.length - 1) {
+                    mCurrentPosition++;
+                    doPrintImg();
+                } else {
+                    mCurrentPosition = 0;
+                    mIsMultiPrint = false;
+                }
+            }
         } else if (mPrintJobState == PrintJobInfo.STATE_FAILED) {
             Log.d(TAG, "print job " + printJobId + " is failed");
             mLogContainer.addLog("state:" + mPrintJobState + " 打印任务失败");
@@ -303,9 +331,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         generateSpContent();
 
 
+        if (mCurrentPosition > IMAGE_IDS.length - 1) {
+            mCurrentPosition = 0;
+        }
 
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),
-                R.drawable.neimaer);
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), IMAGE_IDS[mCurrentPosition]);
         if (bitmap == null) {
             return;
         }

@@ -48,8 +48,8 @@ public class MyPrintImageAdapter extends PrintDocumentAdapter {
         mAttributes = newPrintAttributes;
         mPdfDocument = new PrintedPdfDocument(mContext, newPrintAttributes);
 
-        pageHeight = newPrintAttributes.getMediaSize().getHeightMils() / 1000 * 300;
-        pageWidth = newPrintAttributes.getMediaSize().getWidthMils() / 1000 * 300;
+        pageHeight = newPrintAttributes.getMediaSize().getHeightMils() / 1000 * 72;
+        pageWidth = newPrintAttributes.getMediaSize().getWidthMils() / 1000 * 72;
 
         PrintDocumentInfo info = new PrintDocumentInfo.Builder("test-print-test1.jpg")
                 .setContentType(PrintDocumentInfo.CONTENT_TYPE_PHOTO)
@@ -64,52 +64,52 @@ public class MyPrintImageAdapter extends PrintDocumentAdapter {
                         CancellationSignal cancellationSignal,
                         WriteResultCallback writeResultCallback) {
 
-        PdfDocument.PageInfo newPage = new PdfDocument.PageInfo
-                .Builder(pageWidth, pageHeight, 1)
-                .create();//创建对应的Page
+//        PdfDocument.PageInfo newPage = new PdfDocument.PageInfo
+//                .Builder(pageWidth, pageHeight, 1)
+//                .create();//创建对应的Page
+//
+//        PdfDocument.Page page = mPdfDocument.startPage(newPage);  //创建新页面
+//
+//        if (cancellationSignal.isCanceled()) {  //取消信号
+//            writeResultCallback.onWriteCancelled();
+//            mPdfDocument.close();
+//            mPdfDocument = null;
+//            return;
+//        }
+//        RectF content = new RectF(page.getInfo().getContentRect());
+//
+//        Matrix matrix = getMatrix(bitmap.getWidth(), bitmap.getHeight(),
+//                content, PrintHelper.SCALE_MODE_FILL);
+//
+//        // Draw the bitmap.
+//        page.getCanvas().drawBitmap(bitmap, matrix, null);
+//        mPdfDocument.finishPage(page);
+//        try {
+//            // Write the document.
+//            mPdfDocument.writeTo(new FileOutputStream(
+//                    fileDescriptor.getFileDescriptor()));
+//            // Done.
+//            writeResultCallback.onWriteFinished(
+//                    new PageRange[]{PageRange.ALL_PAGES});
+//        } catch (IOException ioe) {
+//            // Failed.
+//            Log.e(TAG, "Error writing printed content", ioe);
+//            writeResultCallback.onWriteFailed(null);
+//        } finally {
+//            if (mPdfDocument != null) {
+//                mPdfDocument.close();
+//            }
+//            if (fileDescriptor != null) {
+//                try {
+//                    fileDescriptor.close();
+//                } catch (IOException ioe) {
+//                    /* ignore */
+//                }
+//            }
+//        }
 
-        PdfDocument.Page page = mPdfDocument.startPage(newPage);  //创建新页面
 
-        if (cancellationSignal.isCanceled()) {  //取消信号
-            writeResultCallback.onWriteCancelled();
-            mPdfDocument.close();
-            mPdfDocument = null;
-            return;
-        }
-        RectF content = new RectF(page.getInfo().getContentRect());
-
-        Matrix matrix = getMatrix(bitmap.getWidth(), bitmap.getHeight(),
-                content, PrintHelper.SCALE_MODE_FILL);
-
-        // Draw the bitmap.
-        page.getCanvas().drawBitmap(bitmap, matrix, null);
-        mPdfDocument.finishPage(page);
-        try {
-            // Write the document.
-            mPdfDocument.writeTo(new FileOutputStream(
-                    fileDescriptor.getFileDescriptor()));
-            // Done.
-            writeResultCallback.onWriteFinished(
-                    new PageRange[]{PageRange.ALL_PAGES});
-        } catch (IOException ioe) {
-            // Failed.
-            Log.e(TAG, "Error writing printed content", ioe);
-            writeResultCallback.onWriteFailed(null);
-        } finally {
-            if (mPdfDocument != null) {
-                mPdfDocument.close();
-            }
-            if (fileDescriptor != null) {
-                try {
-                    fileDescriptor.close();
-                } catch (IOException ioe) {
-                    /* ignore */
-                }
-            }
-        }
-
-
-        /*PrintedPdfDocument pdfDocument = new PrintedPdfDocument(mContext, mAttributes);
+        PrintedPdfDocument pdfDocument = new PrintedPdfDocument(mContext, mAttributes);
         try {
             PdfDocument.Page page = pdfDocument.startPage(1);
 
@@ -144,10 +144,9 @@ public class MyPrintImageAdapter extends PrintDocumentAdapter {
                 try {
                     fileDescriptor.close();
                 } catch (IOException ioe) {
-                    *//* ignore *//*
                 }
             }
-        }*/
+        }
     }
 
     @Override
